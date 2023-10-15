@@ -1,0 +1,5 @@
+detector_engine_file_path=yolov8n_new.bin
+score_thres_=0.5
+iou_thres_=0.4
+topk_=100
+num_labels_=80
