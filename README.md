@@ -39,3 +39,11 @@ sudo ./tests/yolov8
 ```
 $ sudo /home/pi/run_yolo.sh
 ```
+
+## SSH
+```
+$ ping raspberrypi.local
+$ ssh pi@raspberrypi.local # alternative by ip ssh pi@192.168.*.* pass: 1
+$ ifconfig # check ip
+
+```
