@@ -1,23 +1,17 @@
 #include "yolo_interface.hpp"
-
+#include <opencv2/opencv.hpp>
 #include <unistd.h>
 #include <stdio.h>
-#include <signal.h> // Để sử dụng signal
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <signal.h> // Để sử dụng signal
 #include <wiringPi.h>
 #include <wiringSerial.h>
 
-using namespace std;
 using namespace cv;
+using namespace std;
 using namespace chrono;
-
-// std::string gstreamer_pipeline (int capture_width, int capture_height, int display_width, int display_height, int framerate, int flip_method) {
-//     return "v4l2src device=/dev/video0 ! video/x-raw, width=(int)" + std::to_string(capture_width) + ", height=(int)" +
-//            std::to_string(capture_height) + ", framerate=(fraction)" + std::to_string(framerate) +
-//            "/1 ! videoconvert ! video/x-raw, format=(string)BGR ! appsink";
-// }
 
 volatile sig_atomic_t flag = 0;
 pthread_mutex_t mutex_result = PTHREAD_MUTEX_INITIALIZER;
@@ -71,15 +65,16 @@ void* fn_serial(void *args){
 
 int main()
 {
+    float fps;
     pthread_t thread_serial = 0;
     cv::Point ROI_top_left_1 = cv::Point(10, 10);
     cv::Point ROI_right_bottom_1 = cv::Point(300, 230);
     cv::Point ROI_top_left_2 = cv::Point(310, 240);
     cv::Point ROI_right_bottom_2 = cv::Point(630, 470);
-    float fps;
 	YOLO_Interface * YOLO;
     cv::Mat res;
 	std::vector<Object> objs;
+
 	YOLO = new YOLO_Interface("/home/pi/yolo/libs/libyolo/config/YOLO_Config.txt", {"car"});
     pthread_create(&thread_serial, NULL, &fn_serial, NULL);
 
@@ -89,6 +84,9 @@ int main()
 
     // open camera
     videoCapture.open(0);
+    videoCapture.set(CAP_PROP_FRAME_WIDTH, 640);
+    videoCapture.set(CAP_PROP_FRAME_HEIGHT, 480);
+
     namedWindow("VideoCapture", WINDOW_AUTOSIZE);
 
     // check open camera open sucessed or failed
@@ -99,8 +97,6 @@ int main()
     }
     else
     {
-        videoCapture.set(CAP_PROP_FRAME_WIDTH, 640);
-        videoCapture.set(CAP_PROP_FRAME_HEIGHT, 480);
         std::cout << "Hit ESC to exit" << "\n" ;
         while (true)
         {
@@ -151,6 +147,7 @@ int main()
 						{ 255, 255, 255 },
 						2
 					);
+                    
 			YOLO->Draw_Objects(videoFrame, videoFrame, objs);
 
             imshow("VideoCapture", videoFrame);
